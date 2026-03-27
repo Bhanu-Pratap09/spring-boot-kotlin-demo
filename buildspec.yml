@@ -19,12 +19,10 @@ phases:
 
   build:
     commands:
-      - chmod +x gradlew
-      - ./gradlew build -x test
-      - ls build/libs
-      - docker build -t $IMAGE_REPO_NAME .
-      - docker tag $IMAGE_REPO_NAME:latest $ECR_URI:latest
-
+       - chmod +x gradlew
+    - ./gradlew build -x test
+    - ls -R
+    - docker build -t $IMAGE_REPO_NAME .
   post_build:
     commands:
       - docker push $ECR_URI:latest
@@ -33,4 +31,4 @@ phases:
 artifacts:
   files:
     - imagedefinitions.json
-    - ls -R
+    

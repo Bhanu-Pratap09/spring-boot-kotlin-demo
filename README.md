@@ -1,15 +1,26 @@
-# Spring Boot Kotlin sample project
+version: 0.2
 
-This is the source code for a sample Spring Boot application developed with Kotlin and Spring Data JDBC.
+phases:
+  install:
+    runtime-versions:
+      java: corretto17
 
-**See also https://github.com/spring-guides/tut-spring-boot-kotlin for a more complete Spring Boot + Kotlin + JPA example.**
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <358133388983.dkr.ecr.us-east-1.amazonaws.com/springboot-app>
 
-You can launch the application with by running:
+  build:
+    commands:
+      - ./gradlew build
+      - docker build -t springboot-app .
+      - docker tag springboot-app:latest <358133388983.dkr.ecr.us-east-1.amazonaws.com/springboot-app>:latest
 
-		$ ./gradlew bootRun
+  post_build:
+    commands:
+      - docker push <ECR-URI>:latest
+      - printf '[{"name":"springboot-container","imageUri":"%s"}]' <358133388983.dkr.ecr.us-east-1.amazonaws.com/springboot-app>:latest > imagedefinitions.json
 
-And request http://localhost:8080/customers.
-
-This project uses a [Gradle Kotlin DSL](https://docs.gradle.org/current/userguide/kotlin_dsl.html).
-
-This project is Apache 2.0 licensed.
+artifacts:
+  files:
+    - imagedefinitions.json
